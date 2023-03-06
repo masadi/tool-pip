@@ -35,8 +35,8 @@
           </template>
           <template v-slot:cell(actions)="row">
               <b-dropdown id="dropdown-dropleft" dropleft text="Aksi" variant="success" size="sm">
-                  <b-dropdown-item href="javascript:" @click="luluskan(row.item)"><i class="fas fa-check"></i> Luluskan</b-dropdown-item>
-                  <b-dropdown-item href="javascript:" @click="keluarkan(row.item)"><i class="fas fa-times"></i> Keluarkan</b-dropdown-item>
+                  <b-dropdown-item href="javascript:" @click="aksi(row.item, 'Satu')"><i class="fas fa-check"></i> Aksi 1</b-dropdown-item>
+                  <b-dropdown-item href="javascript:" @click="aksi(row.item, 'Dua')"><i class="fas fa-times"></i> Aksi 2</b-dropdown-item>
               </b-dropdown>
           </template>
       </b-table>
@@ -206,11 +206,16 @@ export default {
               }
           })
       },
-      luluskan(item){
-          this.konfirmasi("Aksi ini akan meluluskan Peserta Didik!", 'lulus', item.peserta_didik_id)
-      },
-      keluarkan(item){
-          this.konfirmasi("Aksi ini akan mengeluarkan Peserta Didik!", 'keluar', item.peserta_didik_id)
+      aksi(item, judul){
+          //this.konfirmasi("Aksi ini akan meluluskan Peserta Didik!", 'lulus', item.peserta_didik_id)
+          this.$swal({
+            icon: 'success',
+            title: judul,
+            text: judul,
+            customClass: {
+              confirmButton: 'btn btn-success',
+            },
+          })
       },
       //JIKA SELECT BOX DIGANTI, MAKA FUNGSI INI AKAN DIJALANKAN
       loadPerPage(val) {
