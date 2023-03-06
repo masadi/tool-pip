@@ -1,257 +1,237 @@
 <template>
-  <b-card class="mt-4">
-    <b-card-title class="text-center">TOOL PIP DAPODIK</b-card-title>
-    <b-card-body>
-      <div v-if="isBusy" class="text-center text-danger my-2">
-          <b-spinner class="align-middle"></b-spinner>
-          <strong>Loading...</strong>
-        </div>
-        <div v-else>
-          <b-form-select v-model="sekolah_id" :options="sekolah" text-field="nama" value-field="sekolah_id" @change="getPd">
-            <template #first>
-              <b-form-select-option :value="null" disabled>-- Pilih Sekolah --</b-form-select-option>
-            </template>
-          </b-form-select>
-          <section v-if="items.length">
-            <b-row class="my-2">
-              <b-col md="4">
-                <b-form-group label="Per page" label-for="per-page-select" label-cols="3" label-align="right" class="mb-0">
-                  <b-form-select id="per-page-select" v-model="per_page" :options="pageOptions"></b-form-select>
-                </b-form-group>
-              </b-col>
-              <b-col md="4" offset-md="4">
-                <b-form-group label="Cari" label-for="filter-input" label-cols="3" label-align="right" class="mb-0">
-                  <b-input-group >
-                    <b-form-input id="filter-input" v-model="filter" type="search" placeholder="Cari Peserta Didik..."></b-form-input>
-                    <b-input-group-append>
-                      <b-button :disabled="!filter" @click="filter = ''">Hapus</b-button>
-                    </b-input-group-append>
-                  </b-input-group>
-                </b-form-group>
-              </b-col>
-            </b-row>
+  <div>
+      <b-row>
+          <b-col md="4" class="mb-2">
+              <div class="form-inline">
+                  <!-- KETIKA SELECT BOXNYA DIGANTI, MAKA AKAN MENJALANKAN FUNGSI loadPerPage -->
+                  <select class="form-control" v-model="meta.per_page" @change="loadPerPage">
+                      <option value="10">10</option>
+                      <option value="25">25</option>
+                      <option value="50">50</option>
+                      <option value="100">100</option>
+                  </select>
+                  <label class="ml-2">Entri</label>
+              </div>
+          </b-col>
+          <b-col md="4" offset-md="4">
+              <div class="form-inline float-right">
+                  <label class="mr-2">Cari</label>
+                  <!-- KETIKA ADA INPUTAN PADA KOLOM PENCARIAN, MAKA AKAN MENJALANKAN FUNGSI SEARCH -->
+                  <input type="text" class="form-control" @input="search">
+              </div>
+          </b-col>
+      </b-row>
+      <!-- BLOCK INI AKAN MENGHASILKAN LIST DATA DALAM BENTUK TABLE MENGGUNAKAN COMPONENT TABLE DARI BOOTSTRAP VUE -->
 
-            <!-- Main table element -->
-            <b-table :items="items" :fields="fields" :current-page="current_page" :per-page="per_page" :filter="filter" :filter-included-fields="filterOn" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" :sort-direction="sortDirection" stacked="md" show-empty small @filtered="onFiltered">
-              <template #cell(name)="row">
-                {{ row.value.first }} {{ row.value.last }}
-              </template>
+      <!-- :ITEMS ADALAH DATA YANG AKAN DITAMPILKAN -->
+      <!-- :FIELDS AKAN MENJADI HEADER DARI TABLE, MAKA BERISI FIELD YANG SALING BERKORELASI DENGAN ITEMS -->
+      <!-- :sort-by.sync & :sort-desc.sync AKAN MENGHANDLE FITUR SORTING -->
+      <b-table responsive striped :items="items" :fields="fields" :sort-by.sync="sortBy" :sort-desc.sync="sortDesc" show-empty :busy="isBusy">
+          <template v-slot:table-busy>
+              <div class="text-center text-danger my-2">
+                  <b-spinner class="align-middle"></b-spinner>
+                  <strong>Loading...</strong>
+              </div>
+          </template>
+          <template v-slot:cell(actions)="row">
+              <b-dropdown id="dropdown-dropleft" dropleft text="Aksi" variant="success" size="sm">
+                  <b-dropdown-item href="javascript:" @click="luluskan(row.item)"><i class="fas fa-check"></i> Luluskan</b-dropdown-item>
+                  <b-dropdown-item href="javascript:" @click="keluarkan(row.item)"><i class="fas fa-times"></i> Keluarkan</b-dropdown-item>
+              </b-dropdown>
+          </template>
+      </b-table>
 
-              <template #cell(actions)="row">
-                <b-button  @click="info(row.item, row.index, $event.target)" size="sm" class="mr-1" variant="warning">
-                  Info modal
-                </b-button>
-                <b-button  @click="row.toggleDetails" size="sm" variant="success">
-                  {{ row.detailsShowing ? 'Hide' : 'Show' }} Details
-                </b-button>
-              </template>
-
-              <template #row-details="row">
-                <b-card>
-                  <ul>
-                    <li v-for="(value, key) in row.item" :key="key">{{ key }}: {{ value }}</li>
-                  </ul>
-                </b-card>
-              </template>
-            </b-table>
-            <b-row class="mt-2">
-              <b-col md="6">
-                <p>Menampilkan {{ (meta.from) ? meta.from : 0 }} sampai {{ meta.to }} dari {{ meta.total }} entri</p>
-              </b-col>
-              <!-- BLOCK INI AKAN MENJADI PAGINATION DARI DATA YANG DITAMPILKAN -->
-              <b-col md="6">
-                  <!-- DAN KETIKA TERJADI PERGANTIAN PAGE, MAKA AKAN MENJALANKAN FUNGSI changePage -->
-                  <b-pagination v-model="meta.current_page" :total-rows="meta.total" :per-page="meta.per_page" align="right" @change="changePage"></b-pagination>
-              </b-col>
-            </b-row>
-            <!-- Info modal -->
-            <b-modal :id="infoModal.id" :title="infoModal.title" ok-only @hide="resetInfoModal">
-              <pre>{{ infoModal.content }}</pre>
-            </b-modal>
-          </section>
-        </div>
-    </b-card-body>
-  </b-card>
+      <!-- BAGIAN INI AKAN MENAMPILKAN JUMLAH DATA YANG DI-LOAD -->
+      <b-row class="mt-2">
+          <b-col md="6">
+              <p>Menampilkan {{ (meta.from) ? meta.from : 0 }} sampai {{ meta.to }} dari {{ meta.total }} entri</p>
+          </b-col>
+          <!-- BLOCK INI AKAN MENJADI PAGINATION DARI DATA YANG DITAMPILKAN -->
+          <b-col md="6">
+              <!-- DAN KETIKA TERJADI PERGANTIAN PAGE, MAKA AKAN MENJALANKAN FUNGSI changePage -->
+              <b-pagination v-model="meta.current_page" :total-rows="meta.total" :per-page="meta.per_page" align="right" @change="changePage" aria-controls="dw-datatable"></b-pagination>
+          </b-col>
+      </b-row>
+  </div>
 </template>
 
 <script>
-import { 
-  BCard,
-    BCardTitle,
-    BCardBody,
-    BRow,
-    BCol,
-    BSpinner,
-    BFormSelect,
-    BFormSelectOption,
-    BModal, 
-    BTable,
-    BButton,
-    BPagination,
-    BFormGroup,
-    BFormCheckbox,
-    BFormCheckboxGroup,
-    BInputGroupAppend,
-    BFormInput,
-    BInputGroup,
- } from 'bootstrap-vue'
-
+import _ from 'lodash' //IMPORT LODASH, DIMANA AKAN DIGUNAKAN UNTUK MEMBUAT DELAY KETIKA KOLOM PENCARIAN DIISI
+import { BRow, BCol, BTable, BSpinner, BPagination, BDropdown, BDropdownItem } from 'bootstrap-vue'
 export default {
   components: {
-    BCard,
-    BCardTitle,
-    BCardBody,
-    BRow,
-    BCol,
-    BSpinner,
-    BFormSelect,
-    BFormSelectOption,
-    BModal, 
-    BTable,
-    BButton,
-    BPagination,
-    BFormGroup,
-    BFormCheckbox,
-    BFormCheckboxGroup,
-    BInputGroupAppend,
-    BFormInput,
-    BInputGroup,
+      BRow,
+      BCol,
+      BTable,
+      BSpinner,
+      BPagination,
+      BDropdown, 
+      BDropdownItem,
+  },
+  //PROPS INI ADALAH DATA YANG AKAN DIMINTA DARI PENGGUNA COMPONENT DATATABLE YANG KITA BUAT
+  props: {
+      //ITEMS STRUKTURNYA ADALAH ARRAY, KARENA BAGIAN INI BERISI DATA YANG AKAN DITAMPILKAN DAN SIFATNYA WAJIB DIKIRIMKAN KETIKA COMPONENT INI DIGUNAKAN
+      items: {
+          type: Array,
+          required: true
+      },
+      //FIELDS JUGA SAMA DENGAN ITEMS
+      fields: {
+          type: Array,
+          required: true
+      },
+      //ADAPUN META, TYPENYA ADALAH OBJECT YANG BERISI INFORMASI MENGENAL CURRENT PAGE, LOAD PERPAGE, TOTAL DATA, DAN LAIN SEBAGAINYA.
+      meta: {
+          required: true
+      },
+      title: {
+          type: String,
+          default: "Delete Modal"
+      },
+      editUrl: {
+          type: String,
+          default: null
+      },
+      isBusy: {
+          type: Boolean,
+          default: () => true,
+      }
   },
   data() {
-    return {
-      isBusy: true,
-      sekolah_id: null,
-      sekolah: [],
-      items: [],
-      meta: {},
-      fields: [
-        { 
-          key: 'nama', 
-          label: 'Nama Lengkap', 
-          sortable: true, 
-          sortDirection: 'desc' 
-        },
-        { 
-          key: 'nisn', 
-          label: 'NISN', 
-          sortable: true, 
-          class: 'text-center' 
-        },
-        {
-          key: 'layak_pip',
-          label: 'Layak PIP',
-          formatter: (value, key, item) => {
-            return (value == '1') ? 'Ya' : 'Tidak'
-          },
-          class: 'text-center',
-          sortable: true,
-          sortByFormatted: true,
-          filterByFormatted: true
-        },
-        {
-          key: 'penerima_kip',
-          label: 'Penerima PIP',
-          formatter: (value, key, item) => {
-            console.log(value);
-            return (value == '1') ? 'Ya' : 'Tidak'
-          },
-          class: 'text-center',
-          sortable: true,
-          sortByFormatted: true,
-          filterByFormatted: true
-        },
-        { 
-          key: 'actions', 
-          label: 'Aksi',
-          class: 'text-center',
-        }
-      ],
-      totalRows: 1,
-      current_page: 1,
-      per_page: 10,
-      pageOptions: [10, 25, 50, 100, { value: 500, text: "500" }],
-      sortBy: '',
-      sortDesc: false,
-      sortDirection: 'asc',
-      filter: null,
-      filterOn: [],
-      infoModal: {
-        id: 'info-modal',
-        title: '',
-        content: ''
+      return {
+          //isBusy: true,
+          //VARIABLE INI AKAN MENGHADLE SORTING DATA
+          sortBy: null, //FIELD YANG AKAN DISORT AKAN OTOMATIS DISIMPAN DISINI
+          sortDesc: false, //SEDANGKAN JENISNYA ASCENDING ATAU DESC AKAN DISIMPAN DISINI
+          //TAMBAHKAN DUA VARIABLE INI UNTUK MENGHANDLE MODAL DAN DATA YANG AKAN DIHAPUS
       }
-    }
   },
-  computed: {
-    sortOptions() {
-      // Create an options list from our fields
-      return this.fields
-      filter(f => f.sortable)
-      map(f => {
-        return { text: f.label, value: f.key }
-      })
-    }
-  },
-  mounted() {
-    // Set the initial number of items
-    this.totalRows = this.meta.total
-  },
-  created() {
-    this.$ability.update([
-      { 'action': 'manage' },
-      { 'subject': 'all' }
-    ])
-    this.$http.get('/sekolah').then(response => {
-      this.isBusy = false
-      this.sekolah = response.data
-    });
+  watch: {
+      //KETIKA VALUE DARI VARIABLE sortBy BERUBAH
+      sortBy(val) {
+          //MAKA KITA EMIT DENGAN NAMA SORT DAN DATANYA ADALAH OBJECT BERUPA VALUE DARI SORTBY DAN SORTDESC
+          //EMIT BERARTI MENGIRIMKAN DATA KEPADA PARENT ATAU YANG MEMANGGIL COMPONENT INI
+          //SEHINGGA DARI PARENT TERSEBUT, KITA BISA MENGGUNAKAN VALUE YANG DIKIRIMKAN
+          this.$emit('sort', {
+              sortBy: this.sortBy,
+              sortDesc: this.sortDesc
+          })
+      },
+      //KETIKA VALUE DARI SORTDESC BERUBAH
+      sortDesc(val) {
+          //MAKA CARA YANG SAMA AKAN DIKERJAKAN
+          this.$emit('sort', {
+              sortBy: this.sortBy,
+              sortDesc: this.sortDesc
+          })
+      }
   },
   methods: {
-    getPd(){
-      let current_page = this.current_page//this.search == '' ? this.current_page : 1
-      //LAKUKAN REQUEST KE API UNTUK MENGAMBIL DATA POSTINGAN
-      this.$http.get('/pd', {
-        params: {
-          sekolah_id: this.sekolah_id,
-          page: current_page,
-          per_page: this.per_page,
-          q: this.search,
-          sortby: this.sortBy,
-          sortbydesc: this.sortByDesc ? 'DESC' : 'ASC'
-        }
-      }).then(response => {
-        //this.items = response.data.all_pd
-        let getData = response.data.data
-        this.isBusy = false
-        this.items = getData.data//MAKA ASSIGN DATA POSTINGAN KE DALAM VARIABLE ITEMS
-        //DAN ASSIGN INFORMASI LAINNYA KE DALAM VARIABLE META
-        this.meta = {
-          total: getData.total,
-          current_page: getData.current_page,
-          per_page: getData.per_page,
-          from: getData.from,
-          to: getData.to,
-        }
-      })
-    },
-    info(item, index, button) {
-      this.infoModal.title = `Row index: ${index}`
-      this.infoModal.content = JSON.stringify(item, null, 2)
-      this.$root.$emit('bv::show::modal', this.infoModal.id, button)
-    },
-    resetInfoModal() {
-      this.infoModal.title = ''
-      this.infoModal.content = ''
-    },
-    onFiltered(filteredItems) {
-      // Trigger pagination to update the number of buttons/pages due to filtering
-      this.totalRows = filteredItems.length
-      this.current_page = 1
-    },
-    changePage(val) {
-      this.current_page = val
-      this.getPd()
-    },
-  },
+      konfirmasi(text, aksi, peserta_didik_id){
+          this.$swal({
+              title: 'Apakah Anda yakin?',
+              text: text,
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonText: 'Yakin!',
+              customClass: {
+                  confirmButton: 'btn btn-primary',
+                  cancelButton: 'btn btn-outline-danger ml-1',
+              },
+              buttonsStyling: false,
+          }).then(result => {
+              if (result.value) {
+                  if(aksi == 'keluar'){
+                      this.$swal({
+                          title: 'Pilih Jenis Keluar',
+                          input: 'select',
+                          inputOptions: {
+                              2:"Mutasi",
+                              3:"Dikeluarkan",
+                              4:"Mengundurkan diri",
+                              5:"Putus Sekolah",
+                              6:"Wafat",
+                              7:"Hilang"
+                          },
+                          inputPlaceholder: '== Pilih Jenis Keluar ==',
+                          showCancelButton: true,
+                          customClass: {
+                              confirmButton: 'mr-1',
+                          },
+                          inputValidator: (value) => {
+                              return new Promise((resolve) => {
+                                  if (value) {
+                                      this.$http.post('/referensi/keluarkan-pd', {
+                                          aksi: aksi,
+                                          peserta_didik_id: peserta_didik_id,
+                                          jenis_keluar_id: value,
+                                      }).then(response => {
+                                          let data = response.data
+                                          this.$swal({
+                                              icon: data.icon,
+                                              title: data.title,
+                                              text: data.text,
+                                              customClass: {
+                                                  confirmButton: 'btn btn-success',
+                                              },
+                                          }).then(result => {
+                                              this.loadPerPage(10);
+                                          })
+                                      });
+                                  } else {
+                                      resolve('Jenis Keluar tidak boleh kosong!')
+                                  }
+                              })
+                          }
+                      })
+                  } else {
+                      this.$http.post('/referensi/keluarkan-pd', {
+                          aksi: aksi,
+                          peserta_didik_id: peserta_didik_id,
+                          jenis_keluar_id: 1,
+                      }).then(response => {
+                          let data = response.data
+                          this.$swal({
+                              icon: data.icon,
+                              title: data.title,
+                              text: data.text,
+                              customClass: {
+                                  confirmButton: 'btn btn-success',
+                              },
+                              }).then(result => {
+                                  this.loadPerPage(10);
+                              })
+                      });
+                  }
+              }
+          })
+      },
+      luluskan(item){
+          this.konfirmasi("Aksi ini akan meluluskan Peserta Didik!", 'lulus', item.peserta_didik_id)
+      },
+      keluarkan(item){
+          this.konfirmasi("Aksi ini akan mengeluarkan Peserta Didik!", 'keluar', item.peserta_didik_id)
+      },
+      //JIKA SELECT BOX DIGANTI, MAKA FUNGSI INI AKAN DIJALANKAN
+      loadPerPage(val) {
+          //DAN KITA EMIT LAGI DENGAN NAMA per_page DAN VALUE SESUAI PER_PAGE YANG DIPILIH
+          this.$emit('per_page', this.meta.per_page)
+      },
+      //KETIKA PAGINATION BERUBAH, MAKA FUNGSI INI AKAN DIJALANKAN
+      changePage(val) {
+          //KIRIM EMIT DENGAN NAMA PAGINATION DAN VALUENYA ADALAH HALAMAN YANG DIPILIH OLEH USER
+          this.$emit('pagination', val)
+      },
+      //KETIKA KOTAK PENCARIAN DIISI, MAKA FUNGSI INI AKAN DIJALANKAN
+      //KITA GUNAKAN DEBOUNCE UNTUK MEMBUAT DELAY, DIMANA FUNGSI INI AKAN DIJALANKAN
+      //500 MIL SECOND SETELAH USER BERHENTI MENGETIK
+      search: _.debounce(function (e) {
+          //KIRIM EMIT DENGAN NAMA SEARCH DAN VALUE SESUAI YANG DIKETIKKAN OLEH USER
+          this.$emit('search', e.target.value)
+      }, 500),
+  }
 }
 </script>
+<style lang="scss">
+@import '~@resources/scss/vue/libs/vue-sweetalert.scss';
+</style>
