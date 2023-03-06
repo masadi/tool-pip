@@ -13,7 +13,7 @@
       <b-row class="breadcrumbs-top">
         <b-col cols="12">
           <h2 class="content-header-title float-left pr-1 mb-0">
-            {{ $route.meta.pageTitle }}
+            {{ t($route.meta.pageTitle) }}
           </h2>
           <div class="breadcrumb-wrapper">
             <b-breadcrumb>
@@ -30,7 +30,7 @@
                 :active="item.active"
                 :to="item.to"
               >
-                {{ item.text }}
+                {{ t(item.text) }}
               </b-breadcrumb-item>
             </b-breadcrumb>
           </div>
@@ -98,10 +98,9 @@
 </template>
 
 <script>
-import {
-  BBreadcrumb, BBreadcrumbItem, BRow, BCol, BDropdown, BDropdownItem, BButton,
-} from 'bootstrap-vue'
+import { BBreadcrumb, BBreadcrumbItem, BRow, BCol, BDropdown, BDropdownItem, BButton } from 'bootstrap-vue'
 import Ripple from 'vue-ripple-directive'
+import { useUtils as useI18nUtils } from '@core/libs/i18n'
 
 export default {
   directives: {
@@ -115,6 +114,14 @@ export default {
     BDropdown,
     BDropdownItem,
     BButton,
+  },
+  setup() {
+    const { t } = useI18nUtils()
+
+    return {
+      // i18n
+      t,
+    }
   },
 }
 </script>

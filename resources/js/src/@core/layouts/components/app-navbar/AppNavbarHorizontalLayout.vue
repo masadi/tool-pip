@@ -18,17 +18,12 @@
 
     <!-- Left Col -->
     <div class="bookmark-wrapper align-items-center flex-grow-1 d-none d-lg-flex">
-      <bookmarks />
+      <logokiri />
     </div>
 
     <!-- Right Col -->
     <b-navbar-nav class="nav align-items-center ml-auto">
-      <locale />
-      <dark-Toggler class="d-none d-lg-block" />
-      <search-bar />
-      <cart-dropdown />
-      <notification-dropdown />
-      <user-dropdown />
+      <logokanan />
     </b-navbar-nav>
   </div>
 </template>
@@ -37,7 +32,8 @@
 import {
   BLink, BNavbarNav,
 } from 'bootstrap-vue'
-import Bookmarks from './components/Bookmarks.vue'
+import Logokiri from './components/Logo-kiri.vue'
+import Logokanan from './components/Logo-kanan.vue'
 import Locale from './components/Locale.vue'
 import DarkToggler from './components/DarkToggler.vue'
 import SearchBar from './components/SearchBar.vue'
@@ -51,7 +47,8 @@ export default {
 
     // Navbar Components
     BNavbarNav,
-    Bookmarks,
+    Logokiri,
+    Logokanan,
     Locale,
     DarkToggler,
     SearchBar,

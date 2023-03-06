@@ -64,11 +64,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '~@core/scss/base/bootstrap-extended/include'; // Bootstrap includes
-@import '~@core/scss/base/components/include'; // Components includes
+@import '~@resources/scss/base/bootstrap-extended/include'; // Bootstrap includes
+@import '~@resources/scss/base/components/include'; // Components includes
 
 // Color palettes
-@import '~@core/scss/base/core/colors/palette-variables.scss';
+@import '~@resources/scss/base/core/colors/palette-variables.scss';
 
 $timeline-border-color: $border-color;
 

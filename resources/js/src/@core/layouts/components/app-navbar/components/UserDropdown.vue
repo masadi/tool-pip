@@ -1,5 +1,5 @@
 <template>
-  <b-nav-item-dropdown
+  <b-nav-item-dropdown v-if="userData"
     right
     toggle-class="d-flex align-items-center dropdown-user-link"
     class="dropdown-user"
@@ -7,7 +7,7 @@
     <template #button-content>
       <div class="d-sm-flex d-none user-nav">
         <p class="user-name font-weight-bolder mb-0">
-          {{ userData.fullName || userData.username }}
+          {{ userData.name || userData.username }}
         </p>
         <span class="user-status">{{ userData.role }}</span>
       </div>
@@ -20,7 +20,7 @@
         badge-variant="success"
       >
         <feather-icon
-          v-if="!userData.fullName"
+          v-if="!userData.name"
           icon="UserIcon"
           size="22"
         />

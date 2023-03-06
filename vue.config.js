@@ -7,20 +7,22 @@ module.exports = {
     loaderOptions: {
       sass: {
         sassOptions: {
-          includePaths: ['./node_modules', './src/assets']
-        }
-      }
-    }
+          includePaths: ['node_modules', 'resources/assets'],
+        },
+      },
+    },
   },
   configureWebpack: {
     resolve: {
       alias: {
+        '@resources': path.resolve(__dirname, 'resources/'),
+        '@': path.resolve(__dirname, 'resources/js/src/'),
         '@themeConfig': path.resolve(__dirname, 'resources/js/themeConfig.js'),
         '@core': path.resolve(__dirname, 'resources/js/src/@core'),
         '@validations': path.resolve(__dirname, 'resources/js/src/@core/utils/validations/validations.js'),
-        '@axios': path.resolve(__dirname, 'resources/js/src/libs/axios')
-      }
-    }
+        '@axios': path.resolve(__dirname, 'resources/js/src/libs/axios'),
+      },
+    },
   },
   chainWebpack: config => {
     config.module
@@ -39,10 +41,10 @@ module.exports = {
           'b-card-img': 'src',
           'b-card-img-lazy': ['src', 'blank-src'],
           'b-carousel-slide': 'img-src',
-          'b-embed': 'src'
+          'b-embed': 'src',
         }
         return options
       })
   },
-  transpileDependencies: ['vue-echarts', 'resize-detector']
+  transpileDependencies: ['vue-echarts', 'resize-detector'],
 }

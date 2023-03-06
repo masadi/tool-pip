@@ -20,7 +20,7 @@ export default {
 </script>
 
 <style lang="scss">
-@import '~@core/scss/base/bootstrap-extended/include';
+@import '~@resources/scss/base/bootstrap-extended/include';
 
 $cws-sidebar-width: 260px;
 $gap: 2rem;

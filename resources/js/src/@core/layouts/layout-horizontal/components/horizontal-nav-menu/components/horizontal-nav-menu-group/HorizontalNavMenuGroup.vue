@@ -82,7 +82,7 @@ export default {
       updateIsActive,
 
       // ACL
-      canViewVerticalNavMenuGroup,
+      //canViewVerticalNavMenuGroup,
 
       // i18n
       t,

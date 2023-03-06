@@ -17,7 +17,13 @@ export const can = (action, subject) => {
  * Based on item's action and resource
  * @param {Object} item navigation object item
  */
-export const canViewVerticalNavMenuLink = item => can(item.action, item.resource)
+export const canViewVerticalNavMenuLink = item => {
+  if(item.action){
+    can(item.action, item.resource)
+  } else {
+    return true
+  }
+}
 
 /**
  * Check if user can view item based on it's ability

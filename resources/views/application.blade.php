@@ -8,16 +8,16 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <!-- <link rel="icon" href="<%= BASE_URL %>favicon.ico"> -->
 
-  <title>Vuexy - Vuejs, HTML & Laravel Admin Dashboard Template</title>
+  <title>TOOL PIP DAPODIK</title>
 
   <!-- Splash Screen/Loader Styles -->
   <link rel="stylesheet" type="text/css" href="{{ asset(mix('css/loader.css')) }}" />
 
   <!-- Styles -->
-  <link rel="stylesheet" href="{{ asset(mix('css/app.css')) }}">
+  <link rel="stylesheet" href="{{ asset(mix('css/core.css')) }}">
 
   <!-- Favicon -->
-  <link rel="shortcut icon" href="{{ asset('images/logo/favicon.png') }}">
+  <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
 
   <!-- Font -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap"
@@ -26,7 +26,7 @@
 
 <body>
   <noscript>
-    <strong>We're sorry but Vuexy - Vuejs, HTML & Laravel Admin Dashboard Template doesn't work properly without
+    <strong>We're sorry but TOOL PIP DAPODIK doesn't work properly without
       JavaScript enabled. Please enable it to continue.</strong>
   </noscript>
   <div id="loading-bg">
@@ -41,7 +41,9 @@
   </div>
   <div id="app">
   </div>
-
+  <script>
+    var app_url = '{{ url('/') }}';
+  </script>    
   <script src="{{ asset(mix('js/app.js')) }}"></script>
 
 </body>

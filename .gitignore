@@ -1,7 +1,7 @@
+/alur
 /node_modules
 /public/hot
 /public/storage
-/public/fonts
 /storage/*.key
 /vendor
 .env

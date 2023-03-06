@@ -266,8 +266,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '~@core/scss/base/bootstrap-extended/include';
-@import '~@core/scss/base/components/variables-dark';
+@import '~@resources/scss/base/bootstrap-extended/include';
+@import '~@resources/scss/base/components/variables-dark';
 
 ul
 {
