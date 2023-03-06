@@ -12,7 +12,7 @@
               <b-form-select-option :value="null" disabled>-- Pilih Sekolah --</b-form-select-option>
             </template>
           </b-form-select>
-          <datatable v-if="items.length" :isBusy="isBusy" :items="items" :fields="fields" :meta="meta" :title="'Hapus Sekolah'" @per_page="handlePerPage" @pagination="handlePagination" @search="handleSearch" @sort="handleSort" />
+          <datatable v-if="items.length" :isBusy="isBusy" :items="items" :fields="fields" :meta="meta" @per_page="handlePerPage" @pagination="handlePagination" @search="handleSearch" @sort="handleSort" />
         </div>
     </b-card-body>
   </b-card>
@@ -57,6 +57,17 @@ export default {
           class: 'text-center' 
         },
         {
+          key: 'penerima_kip',
+          label: 'Penerima PIP',
+          formatter: (value, key, item) => {
+            return (value == '1') ? 'Ya' : 'Tidak'
+          },
+          class: 'text-center',
+          sortable: true,
+          sortByFormatted: true,
+          filterByFormatted: true
+        },
+        {
           key: 'layak_pip',
           label: 'Layak PIP',
           formatter: (value, key, item) => {
@@ -67,16 +78,9 @@ export default {
           sortByFormatted: true,
           filterByFormatted: true
         },
-        {
-          key: 'penerima_kip',
-          label: 'Penerima PIP',
-          formatter: (value, key, item) => {
-            return (value == '1') ? 'Ya' : 'Tidak'
-          },
-          class: 'text-center',
-          sortable: true,
-          sortByFormatted: true,
-          filterByFormatted: true
+        { 
+          key: 'kelayakan', 
+          label: 'Alasan Layak PIP', 
         },
         { 
           key: 'actions', 
@@ -90,7 +94,7 @@ export default {
       per_page: 10, //DEFAULT LOAD PERPAGE ADALAH 10
       search: '',
       sortBy: 'nama', //DEFAULT SORTNYA ADALAH CREATED_AT
-      sortByDesc: false, //ASCEDING
+      sortByDesc: false, //ASCEDING,
     }
   },
   created() {
@@ -117,6 +121,7 @@ export default {
         }
       }).then(response => {
         let getData = response.data.data
+        console.log(response.data);
         this.isBusy = false
         this.items = getData.data
         this.meta = {
