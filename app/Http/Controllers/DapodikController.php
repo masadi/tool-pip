@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\Sekolah;
 use App\Models\Peserta_didik;
 use App\Models\Semester;
 use App\Models\Layak;
+use App\Models\Periodik;
 use Storage;
 
 class DapodikController extends Controller
@@ -17,7 +19,15 @@ class DapodikController extends Controller
         return response()->json($data);
     }
     public function pd(){
-        $data = Peserta_didik::with(['kelayakan'])->where($this->kondisi())->orderBy('nama')
+        $data = Peserta_didik::with([
+            'kelayakan', 
+            'periodik' => function($query){
+                $query->where('semester_id', $this->semester_id());
+            },
+            'rombongan_belajar' => function($query){
+                $query->where('semester_id', $this->semester_id());
+            },
+        ])->where($this->kondisi())->orderBy(request()->sortby, request()->sortbydesc)
         ->when(request()->q, function($query) {
             $query->where($this->kondisi());
             $query->where('nama', 'ilike', '%'.request()->q.'%');
@@ -58,6 +68,46 @@ class DapodikController extends Controller
                 'icon' => 'error',
                 'title' => 'Gagal!',
                 'text' => 'Status Kelayakan PIP gagal disimpan. Silahkan coba beberapa saat lagi!',
+            ];
+        }
+        return response()->json($data);
+    }
+    public function periodik(){
+        $find = Periodik::where(function($query){
+            $query->where('peserta_didik_id', request()->peserta_didik_id);
+            $query->where('semester_id', $this->semester_id());
+        })->first();
+        if($find){
+            $find->tinggi_badan = request()->tinggi;
+            $find->berat_badan = request()->berat;
+            $find->lingkar_kepala = request()->kepala;
+            $find->jumlah_saudara_kandung = request()->saudara;
+            $insert = $find->save();
+        } else {
+            $insert = Periodik::create([
+                'peserta_didik_id' => request()->peserta_didik_id,
+                'semester_id' => $this->semester_id(),
+                'tinggi_badan' => request()->tinggi,
+                'berat_badan' => request()->berat,
+                'lingkar_kepala' => request()->kepala,
+                'jumlah_saudara_kandung' => request()->saudara,
+                'jarak_rumah_ke_sekolah' => 1,
+                'waktu_tempuh_ke_sekolah' => 1,
+                'updater_id' => Str::uuid(),
+            ]);
+        }
+        if($insert){
+            $data = [
+                'icon' => 'success',
+                'title' => 'Berhasil!',
+                'text' => 'Data Periodik '.request()->nama.' berhasil disimpan!',
+                'request' => request()->all(),
+            ];
+        } else {
+            $data = [
+                'icon' => 'error',
+                'title' => 'Gagal!',
+                'text' => 'Data Periodik '.request()->nama.' gagal disimpan!. Silahkan coba beberapa saat lagi!',
             ];
         }
         return response()->json($data);

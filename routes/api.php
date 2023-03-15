@@ -17,3 +17,4 @@ Route::get('sekolah', [DapodikController::class, 'index']);
 Route::get('pd', [DapodikController::class, 'pd']);
 Route::get('kelayakan', [DapodikController::class, 'kelayakan']);
 Route::post('kelayakan', [DapodikController::class, 'layak']);
+Route::post('periodik', [DapodikController::class, 'periodik']);

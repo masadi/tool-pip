@@ -1,6 +1,6 @@
 <template>
     <div>
-        <b-row>
+        <b-row class="mt-4">
             <b-col md="4" class="mb-2">
                 <div class="form-inline">
                     <!-- KETIKA SELECT BOXNYA DIGANTI, MAKA AKAN MENJALANKAN FUNGSI loadPerPage -->
@@ -36,8 +36,27 @@
             <template v-slot:cell(kelayakan)="row">
                 {{(row.item.kelayakan) ? row.item.kelayakan.alasan_layak_pip : ''}}
             </template>
+            <template v-slot:cell(kelas)="row">
+                {{(row.item.rombongan_belajar) ? row.item.rombongan_belajar.nama : ''}}
+            </template>
+            <template v-slot:cell(tinggi)="row">
+                <b-form-input v-model="form.tinggi[row.item.peserta_didik_id]" placeholder="Tinggi Badan"></b-form-input>
+            </template>
+            <template v-slot:cell(berat)="row">
+                <b-form-input v-model="form.berat[row.item.peserta_didik_id]" placeholder="Berat Badan"></b-form-input>
+            </template>
+            <template v-slot:cell(kepala)="row">
+                <b-form-input v-model="form.kepala[row.item.peserta_didik_id]" placeholder="Lingkar Kepala"></b-form-input>
+            </template>
+            <template v-slot:cell(saudara)="row">
+                <b-form-input v-model="form.saudara[row.item.peserta_didik_id]" placeholder="Jml Saudara Kandung"></b-form-input>
+            </template>
             <template v-slot:cell(actions)="row">
                 <b-button id="show-btn" @click="showModal(row.item)" variant="success" size="sm">Edit</b-button>
+            </template>
+            <template v-slot:cell(aksi)="row">
+                {{setTinggi(row.item)}}
+                <b-button id="show-btn" @click="simpanData(row.item)" variant="primary" size="sm">Simpan</b-button>
             </template>
         </b-table>
 
@@ -77,7 +96,7 @@
 
 <script>
 import _ from 'lodash' //IMPORT LODASH, DIMANA AKAN DIGUNAKAN UNTUK MEMBUAT DELAY KETIKA KOLOM PENCARIAN DIISI
-import { BRow, BCol, BTable, BSpinner, BPagination, BButton, BFormSelect } from 'bootstrap-vue'
+import { BRow, BCol, BTable, BSpinner, BPagination, BButton, BFormSelect, BFormInput } from 'bootstrap-vue'
 export default {
     components: {
         BRow,
@@ -87,6 +106,7 @@ export default {
         BPagination,
         BButton,
         BFormSelect,
+        BFormInput,
     },
     //PROPS INI ADALAH DATA YANG AKAN DIMINTA DARI PENGGUNA COMPONENT DATATABLE YANG KITA BUAT
     props: {
@@ -111,6 +131,12 @@ export default {
     },
     data() {
         return {
+            form: {
+                tinggi : {},
+                berat : {},
+                kepala : {},
+                saudara : {},
+            },
             nama_siswa: null,
             //VARIABLE INI AKAN MENGHADLE SORTING DATA
             sortBy: null, //FIELD YANG AKAN DISORT AKAN OTOMATIS DISIMPAN DISINI
@@ -126,9 +152,20 @@ export default {
             peserta_didik_id: null,
         }
     },
+    computed: {
+        setTinggi() {
+            return item => {
+                this.form.tinggi[item.peserta_didik_id] = (item.periodik) ? item.periodik.tinggi_badan : 0
+                this.form.berat[item.peserta_didik_id] = (item.periodik) ? item.periodik.berat_badan : 0
+                this.form.kepala[item.peserta_didik_id] = (item.periodik) ? item.periodik.lingkar_kepala : 0
+                this.form.saudara[item.peserta_didik_id] = (item.periodik) ? item.periodik.jumlah_saudara_kandung : 0
+            }
+        },
+    },
     watch: {
         //KETIKA VALUE DARI VARIABLE sortBy BERUBAH
         sortBy(val) {
+            console.log(val);
             //MAKA KITA EMIT DENGAN NAMA SORT DAN DATANYA ADALAH OBJECT BERUPA VALUE DARI SORTBY DAN SORTDESC
             //EMIT BERARTI MENGIRIMKAN DATA KEPADA PARENT ATAU YANG MEMANGGIL COMPONENT INI
             //SEHINGGA DARI PARENT TERSEBUT, KITA BISA MENGGUNAKAN VALUE YANG DIKIRIMKAN
@@ -147,6 +184,38 @@ export default {
         }
     },
     methods: {
+        simpanData(item){
+            this.$http.post('/periodik', {
+                nama: item.nama,
+                peserta_didik_id: item.peserta_didik_id,
+                tinggi: parseInt(this.form.tinggi[item.peserta_didik_id]),
+                berat: parseInt(this.form.berat[item.peserta_didik_id]),
+                kepala: parseInt(this.form.kepala[item.peserta_didik_id]),
+                saudara: parseInt(this.form.saudara[item.peserta_didik_id]),
+            }).then(response => {
+                this.$swal({
+                    icon: response.data.icon,
+                    title: response.data.title,
+                    text: response.data.text,
+                    customClass: {
+                    confirmButton: 'btn btn-success',
+                    },
+                }).then(response => {
+                    this.loadPerPage(this.meta.per_page)
+                })
+            });
+            /*console.log(this.form);
+            this.$swal({
+                icon: 'success',
+                title: 'Berhasil',
+                text: 'Data Periodik '+item.nama+' berhasil disimpan',
+                customClass: {
+                    confirmButton: 'btn btn-success',
+                },
+            }).then(response => {
+                this.loadPerPage(this.meta.per_page)
+            })*/
+        },
         showModal(item) {
             this.peserta_didik_id = item.peserta_didik_id
             this.nama_siswa = item.nama
